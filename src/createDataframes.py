@@ -2,6 +2,7 @@ import itertools
 import warnings
 import pandas as pd
 import time
+import datetime
 
 import numpy as np
 
@@ -14,30 +15,33 @@ def readFile(filename):
     fileHandle = open(filename, "r")
     lineList = fileHandle.read().splitlines()
     fileHandle.close()
+    entries = 0
     for student in range(len(lineList)):
         examsList = lineList[student].rstrip().split()
         for examcode in examsList:
+            entries = entries + 1
             if examcode not in currentProblem.keys():
-                currentProblem[str(examcode)] = [student + 0]
+                currentProblem[str(examcode)] = [student + 1] # Επειδή η αρίθμηση ξεκινάει απο 0 προσθέτουμε + 1 για να δείχνουμε σωστά την θέση του φοιτητή
             else:
-                currentProblem[str(examcode)].append(student + 0)
-    problemInfo(lineList, currentProblem.keys())
+                currentProblem[str(examcode)].append(student + 1) # Επειδή η αρίθμηση ξεκινάει απο 0 προσθέτουμε + 1 για να δείχνουμε σωστά την θέση του φοιτητή
+    print(currentProblem)
+    problemInfo(lineList, currentProblem.keys(), entries)
 
 
 def conflictTable(linelist, courses):
-    data = pd.DataFrame(0, index=courses, columns=courses)
+    data = pd.DataFrame(0, index=courses, columns=courses) # Δημιουργώ ένα dataframe μηδενικό με γραμμές και στήλες όσες είναι τα μαθήματα
     for line in linelist:
         lineArray = line.rstrip().split()
-        for pair in itertools.permutations(lineArray, r=2):  # get all possible pairs
+        for pair in itertools.permutations(lineArray, r=2):  # get all possible pairs example (1,2) and (2,1)
             data.loc[[str(pair[0])], [str(pair[1])]] = 1
     density = float(data.values.sum()) / float(data.size)
     return ("%.2f" % density)
 
 
-def problemInfo(lineList, courses):
+def problemInfo(lineList, courses, entries):
     density = conflictTable(lineList, courses)
     print('Problem info:')
-    results = {'exams': len(courses), 'entries': len(courses), 'students': len(lineList)-1, 'density': density}
+    results = {'exams': len(courses), 'students': len(lineList), 'entries': entries, 'density': density}
     print(results)
 
 
@@ -59,5 +63,6 @@ def problemInfo(lineList, courses):
 #     return results
 
 start_time = time.time()
-readFile('../datasheets/pur-s-93.stu')
-print("--- %s seconds ---" % (time.time() - start_time))
+readFile('../datasheets/problems/car-f-92.stu')
+# print("--- %s seconds ---" % (time.time() - start_time))
+print(str(datetime.timedelta(seconds=time.time() - start_time)))
