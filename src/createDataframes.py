@@ -3,12 +3,11 @@ import warnings
 import pandas as pd
 import time
 import datetime
-
-import numpy as np
+import networkx as nx
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-currentProblem = {}
+currentProblem = {}  # Dictionary key,value ==> examCode, [array of students]
 
 
 def readFile(filename):
@@ -21,20 +20,31 @@ def readFile(filename):
         for examcode in examsList:
             entries = entries + 1
             if examcode not in currentProblem.keys():
-                currentProblem[str(examcode)] = [student + 1] # Επειδή η αρίθμηση ξεκινάει απο 0 προσθέτουμε + 1 για να δείχνουμε σωστά την θέση του φοιτητή
+                currentProblem[str(examcode)] = [
+                    student + 1]  # Επειδή η αρίθμηση ξεκινάει απο 0 προσθέτουμε + 1 για να δείχνουμε σωστά την θέση του φοιτητή
             else:
-                currentProblem[str(examcode)].append(student + 1) # Επειδή η αρίθμηση ξεκινάει απο 0 προσθέτουμε + 1 για να δείχνουμε σωστά την θέση του φοιτητή
+                currentProblem[str(examcode)].append(
+                    student + 1)  # Επειδή η αρίθμηση ξεκινάει απο 0 προσθέτουμε + 1 για να δείχνουμε σωστά την θέση του φοιτητή
     print(currentProblem)
     problemInfo(lineList, currentProblem.keys(), entries)
 
+    # ###############example of NetworkX lib######################
+    # print(currentProblem)
+    # g = nx.DiGraph(currentProblem)
+    # d = nx.coloring.greedy_color(g, strategy="largest_first")
+    # print(d)
+    # ###############example of NetworkX lib######################
+
 
 def conflictTable(linelist, courses):
-    data = pd.DataFrame(0, index=courses, columns=courses) # Δημιουργώ ένα dataframe μηδενικό με γραμμές και στήλες όσες είναι τα μαθήματα
+    data = pd.DataFrame(0, index=courses,
+                        columns=courses)  # Δημιουργώ ένα dataframe μηδενικό με γραμμές και στήλες όσες είναι τα μαθήματα
     for line in linelist:
         lineArray = line.rstrip().split()
         for pair in itertools.permutations(lineArray, r=2):  # get all possible pairs example (1,2) and (2,1)
             data.loc[[str(pair[0])], [str(pair[1])]] = 1
     density = float(data.values.sum()) / float(data.size)
+    print(data.to_string())
     return ("%.2f" % density)
 
 
@@ -62,7 +72,7 @@ def problemInfo(lineList, courses, entries):
 #     print(results)
 #     return results
 
-start_time = time.time()
+# start_time = time.time()
 readFile('../datasheets/problems/car-f-92.stu')
 # print("--- %s seconds ---" % (time.time() - start_time))
-print(str(datetime.timedelta(seconds=time.time() - start_time)))
+# print(str(datetime.timedelta(seconds=time.time() - start_time)))
