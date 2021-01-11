@@ -4,6 +4,7 @@ import pandas as pd
 import time
 import datetime
 import networkx as nx
+import matplotlib.pyplot as plt
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -73,6 +74,14 @@ def problemInfo(lineList, courses, entries):
 #     return results
 
 # start_time = time.time()
-readFile('../datasheets/problems/car-f-92.stu')
+# readFile('../datasheets/problems/car-f-92.stu')
 # print("--- %s seconds ---" % (time.time() - start_time))
 # print(str(datetime.timedelta(seconds=time.time() - start_time)))
+
+elist = [(10, 20, 5.0), (10, 40, 3.0)]
+G = nx.Graph()
+G.add_weighted_edges_from(elist)
+d = nx.coloring.greedy_color(G, strategy="largest_first")
+nx.draw(G)
+print(d)
+plt.show()
