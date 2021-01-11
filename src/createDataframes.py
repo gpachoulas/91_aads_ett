@@ -1,8 +1,7 @@
 import itertools
 import warnings
 import pandas as pd
-import time
-import datetime
+import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 
@@ -45,15 +44,33 @@ def conflictTable(linelist, courses):
         for pair in itertools.permutations(lineArray, r=2):  # get all possible pairs example (1,2) and (2,1)
             data.loc[[str(pair[0])], [str(pair[1])]] = 1
     density = float(data.values.sum()) / float(data.size)
-    print(data.to_string())
+    greedyAlgorith(data)
     return ("%.2f" % density)
+
+
+def show_graph_with_labels(adjacency_matrix):
+    rows, cols = np.where(adjacency_matrix == 1)
+    edges = zip(rows.tolist(), cols.tolist())
+    gr = nx.Graph()
+    gr.add_edges_from(edges)
+    d = nx.coloring.greedy_color(gr, strategy="smallest_last")
+    print(d)
+    # nx.draw(gr, node_size=500)
+    # plt.show()
+
+
+def greedyAlgorith(data):
+    print(data.to_string())
+    s = data.to_numpy()
+    show_graph_with_labels(s)
+    print(s)
 
 
 def problemInfo(lineList, courses, entries):
     density = conflictTable(lineList, courses)
     print('Problem info:')
     results = {'exams': len(courses), 'students': len(lineList), 'entries': entries, 'density': density}
-    print(results)
+    # print(results)
 
 
 # def readFile(filename):
@@ -74,14 +91,14 @@ def problemInfo(lineList, courses, entries):
 #     return results
 
 # start_time = time.time()
-# readFile('../datasheets/problems/car-f-92.stu')
+# readFile('../datasheets/problems/kfu-s-93.stu')
 # print("--- %s seconds ---" % (time.time() - start_time))
 # print(str(datetime.timedelta(seconds=time.time() - start_time)))
 
-elist = [(10, 20, 5.0), (10, 40, 3.0)]
-G = nx.Graph()
-G.add_weighted_edges_from(elist)
-d = nx.coloring.greedy_color(G, strategy="largest_first")
-nx.draw(G)
-print(d)
-plt.show()
+# elist = [(10, 20, 5.0), (10, 40, 3.0)]
+# G = nx.Graph()
+# G.add_weighted_edges_from(elist)
+# d = nx.coloring.greedy_color(G, strategy="largest_first")
+# nx.draw(G)
+# print(d)
+# plt.show()
