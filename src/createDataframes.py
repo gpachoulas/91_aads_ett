@@ -11,6 +11,7 @@ wait = animation.Wait()
 
 
 def readFile(filename):
+    currentProblem['filename'] = (filename.split('\\')[1]).split('.')[0]
     dataProblem = {}  # Dictionary key,value ==> examCode, [array of students]
     fileHandle = open(filename, "r")
     lineList = fileHandle.read().splitlines()
@@ -64,7 +65,6 @@ def problemInfo():
 
 def calculateCost():
     sum = 0
-    costTable = [0, 16, 8, 4, 2, 1]
     for i in currentProblem['pairs']:
         for pair in itertools.combinations(i, r=2):  # get all possible pairs example (1,2) and (2,1)
             difference = abs(currentProblem['solution'].get(int(pair[0].lstrip('0'))) - currentProblem['solution'].get(
@@ -79,9 +79,7 @@ def calculateCost():
                 sum = sum + 2
             elif difference == 5:
                 sum = sum + 1
-    # print(sum / len(set(currentProblem['entries'])))
     currentProblem['solutionCost'] = sum / len(set(currentProblem['entries']))
-    print("\n Cost of solution %.2f" % currentProblem['solutionCost'])
 
 
 def colorGraph():
@@ -91,7 +89,6 @@ def colorGraph():
     data = pd.DataFrame.from_dict(currentProblem['conflictsTable'])
     data = data.to_dict()
     edges = []
-    print('Creating solution')
     wait.start()
     for key, value in data.items():
         for insidekey, insidevalue in value.items():
@@ -100,19 +97,26 @@ def colorGraph():
     graph = nx.Graph()
     graph.add_edges_from(edges)
     solution = nx.coloring.greedy_color(graph, strategy="smallest_last")
-    wait.stop()
-    print('Solution Created...')
-    print('Calculating cost of solution')
     currentProblem['solution'] = solution
-    wait.start()
     calculateCost()
     wait.stop()
+    periodsUsed = len(set(currentProblem['solution'].values()))
+    print("\n Periods: " + str(periodsUsed) + ", Cost of solution: %.2f" % currentProblem['solutionCost'])
+    exportSolution()
     # nx.draw(graph, with_labels=True, node_size=5, font_weight='bold')
     # plt.show()
+
+
+def exportSolution():
+    data = pd.DataFrame(list(currentProblem['solution'].items()), columns=['Lesson', 'Period'])
+    data['Lesson'] = data['Lesson'].apply(str).str.zfill(4)
+    cost = "{:.2f}".format(currentProblem['solutionCost'])
+    data.to_csv('mySolutions/' + currentProblem['filename'] + '(' + cost + ').csv', index=False, sep=' ',
+                      header=False)
 
 # start_time = time.time()
 # readFile('../datasheets/problems/kfu-s-93.stu')
 # print("--- %s seconds ---" % (time.time() - start_time))
 # print(str(datetime.timedelta(seconds=time.time() - start_time)))
 
-# readFile("../datasheets/problems/lse-f-91.stu")
+# readFile("../datasheets/problems/demo.stu")

@@ -16,7 +16,7 @@ def loadData():
     for file in range(len(files)):
         print('[' + str(file + 1) + ']' + ' ' + files[file].split('\\')[1])
     print('[' + str(len(files) + 1) + ']' + ' ' + 'Return to menu')
-    selectedOption = input()
+    selectedOption = input('Select file: \n')
     if selectedOption == str(len(files) + 1):
         printMainMenu()
     else:
