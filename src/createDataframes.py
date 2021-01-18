@@ -1,14 +1,13 @@
 import itertools
 import warnings
 import pandas as pd
-import numpy as np
 import networkx as nx
-import matplotlib.pyplot as plt
-from netwulf import visualize
+import animation
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 currentProblem = {}
+wait = animation.Wait()
 
 
 def readFile(filename):
@@ -26,8 +25,6 @@ def readFile(filename):
                 dataProblem[str(examcode)].append(
                     student + 1)  # Επειδή η αρίθμηση ξεκινάει απο 0 προσθέτουμε + 1 για να δείχνουμε σωστά την θέση του φοιτητή
     currentProblem['dataProblem'] = dataProblem
-    problemInfo()
-    # print(currentProblem)
 
 
 def confiltTable():
@@ -50,15 +47,19 @@ def confiltTable():
 
 
 def problemInfo():
+    if ('dataProblem' not in currentProblem.keys()):
+        print('Error in reading of data')
+        return
+    wait.start()
     confiltTable()
+    wait.stop()
     data = pd.DataFrame.from_dict(currentProblem['conflictsTable'])
     density = float(data.values.sum()) / float(data.size)
-    colorGraph()
-    # print('Problem info:')
-    # results = {'exams': len(currentProblem['dataProblem'].keys()), 'students': len(set(currentProblem['entries'])),
-    #            'entries': len(currentProblem['entries']),
-    #            'density': ("%.2f" % density)}
-    # print(results)
+    print('Problem info:')
+    results = {'Exams': len(currentProblem['dataProblem'].keys()), 'Students': len(set(currentProblem['entries'])),
+               'Entries': len(currentProblem['entries']),
+               'Density': ("%.2f" % density)}
+    print(results)
 
 
 def calculateCost():
@@ -68,7 +69,6 @@ def calculateCost():
         for pair in itertools.combinations(i, r=2):  # get all possible pairs example (1,2) and (2,1)
             difference = abs(currentProblem['solution'].get(int(pair[0].lstrip('0'))) - currentProblem['solution'].get(
                 int(pair[1].lstrip('0'))))
-            print(difference)
             if difference == 1:
                 sum = sum + 16
             elif difference == 2:
@@ -79,29 +79,40 @@ def calculateCost():
                 sum = sum + 2
             elif difference == 5:
                 sum = sum + 1
-    print(sum / len(set(currentProblem['entries'])))
+    # print(sum / len(set(currentProblem['entries'])))
+    currentProblem['solutionCost'] = sum / len(set(currentProblem['entries']))
+    print("\n Cost of solution %.2f" % currentProblem['solutionCost'])
 
 
 def colorGraph():
-    correctSolutions = {}
-    s = pd.DataFrame.from_dict(currentProblem['conflictsTable']).to_numpy()
-    rows, cols = np.where(s == 1)
-    edges = zip(rows.tolist(), cols.tolist())
+    if ('conflictsTable' not in currentProblem.keys()):
+        print('No data selected')
+        return
+    data = pd.DataFrame.from_dict(currentProblem['conflictsTable'])
+    data = data.to_dict()
+    edges = []
+    print('Creating solution')
+    wait.start()
+    for key, value in data.items():
+        for insidekey, insidevalue in value.items():
+            if insidevalue == 1:
+                edges.append(tuple((int(insidekey), int(key))))
     graph = nx.Graph()
     graph.add_edges_from(edges)
     solution = nx.coloring.greedy_color(graph, strategy="smallest_last")
-    for key, value in solution.items():
-        correctSolutions[key + 1] = value
-    currentProblem['solution'] = correctSolutions
+    wait.stop()
+    print('Solution Created...')
+    print('Calculating cost of solution')
+    currentProblem['solution'] = solution
+    wait.start()
     calculateCost()
+    wait.stop()
     # nx.draw(graph, with_labels=True, node_size=5, font_weight='bold')
     # plt.show()
-    # visualize(d)
-
 
 # start_time = time.time()
 # readFile('../datasheets/problems/kfu-s-93.stu')
 # print("--- %s seconds ---" % (time.time() - start_time))
 # print(str(datetime.timedelta(seconds=time.time() - start_time)))
 
-readFile("../datasheets/problems/lse-f-91.stu")
+# readFile("../datasheets/problems/lse-f-91.stu")

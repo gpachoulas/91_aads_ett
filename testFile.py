@@ -1,2 +1,7 @@
-test = {0: [2, 3, 4], 3: 5}
-print(test[0][2])
+import animation
+
+wait = animation.Wait()
+wait.start()
+while True:
+    print('test')
+wait.stop()

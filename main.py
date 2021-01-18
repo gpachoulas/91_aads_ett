@@ -1,5 +1,5 @@
-menuOptions = ['Load data', 'Check solution', 'Exit']
-import src.createDataframes as test
+menuOptions = ['Load data', 'Solve Problem', 'Exit']
+import src.createDataframes as mainFunctions
 
 
 def printMainMenu():
@@ -9,27 +9,25 @@ def printMainMenu():
 
 
 def loadData():
-    import os
-    os.system('cls' if os.name == 'nt' else 'clear')
     import glob
-    os.chdir("datasheets/problems/")
     files = []
-    for file in glob.glob("*.stu"):
+    for file in glob.glob("datasheets/problems/*.stu"):
         files.append(file)
     for file in range(len(files)):
-        print('[' + str(file + 1) + ']' + ' ' + files[file])
+        print('[' + str(file + 1) + ']' + ' ' + files[file].split('\\')[1])
     print('[' + str(len(files) + 1) + ']' + ' ' + 'Return to menu')
     selectedOption = input()
     if selectedOption == str(len(files) + 1):
         printMainMenu()
     else:
-        print(files[int(selectedOption) - 1])
-        test.readFile(files[int(selectedOption) - 1])
-        printMainMenu()
+        print('Selected data: ' + files[int(selectedOption) - 1].split('\\')[1])
+        mainFunctions.readFile(files[int(selectedOption) - 1])
+        mainFunctions.problemInfo()
+        input("Press Enter to continue...")
 
 
-def two():
-    print('tete')
+def solveProblem():
+    mainFunctions.colorGraph()
 
 
 def exit():
@@ -40,7 +38,7 @@ def exit():
 def selectOption(selectedOption):
     switcher = {
         1: loadData,
-        2: two,
+        2: solveProblem,
         3: exit
     }
     func = switcher.get(int(selectedOption), lambda: 'Invalid')
@@ -48,7 +46,7 @@ def selectOption(selectedOption):
 
 
 if __name__ == '__main__':
-    # while (True):
-    printMainMenu()
-    selectedOption = input()
-    selectOption(selectedOption)
+    while (True):
+        printMainMenu()
+        selectedOption = input()
+        selectOption(selectedOption)
