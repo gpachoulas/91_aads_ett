@@ -3,6 +3,7 @@ import warnings
 import pandas as pd
 import networkx as nx
 import animation
+import glob
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -26,6 +27,8 @@ def readFile(filename):
                 dataProblem[str(examcode)].append(
                     student + 1)  # Επειδή η αρίθμηση ξεκινάει απο 0 προσθέτουμε + 1 για να δείχνουμε σωστά την θέση του φοιτητή
     currentProblem['dataProblem'] = dataProblem
+    # problemInfo()
+    # colorGraph()
 
 
 def confiltTable():
@@ -63,11 +66,11 @@ def problemInfo():
     print(results)
 
 
-def calculateCost():
+def calculateCost(solutionDict, pairs):
     sum = 0
-    for i in currentProblem['pairs']:
+    for i in pairs:
         for pair in itertools.combinations(i, r=2):  # get all possible pairs example (1,2) and (2,1)
-            difference = abs(currentProblem['solution'].get(int(pair[0].lstrip('0'))) - currentProblem['solution'].get(
+            difference = abs(solutionDict.get(int(pair[0].lstrip('0'))) - solutionDict.get(
                 int(pair[1].lstrip('0'))))
             if difference == 1:
                 sum = sum + 16
@@ -79,7 +82,7 @@ def calculateCost():
                 sum = sum + 2
             elif difference == 5:
                 sum = sum + 1
-    currentProblem['solutionCost'] = sum / len(set(currentProblem['entries']))
+    return (sum / len(set(currentProblem['entries'])))
 
 
 def colorGraph():
@@ -98,7 +101,7 @@ def colorGraph():
     graph.add_edges_from(edges)
     solution = nx.coloring.greedy_color(graph, strategy="smallest_last")
     currentProblem['solution'] = solution
-    calculateCost()
+    currentProblem['solutionCost'] = calculateCost(currentProblem['solution'], currentProblem['pairs'])
     wait.stop()
     periodsUsed = len(set(currentProblem['solution'].values()))
     print("\n Periods: " + str(periodsUsed) + ", Cost of solution: %.2f" % currentProblem['solutionCost'])
@@ -112,11 +115,60 @@ def exportSolution():
     data['Lesson'] = data['Lesson'].apply(str).str.zfill(4)
     cost = "{:.2f}".format(currentProblem['solutionCost'])
     data.to_csv('mySolutions/' + currentProblem['filename'] + '(' + cost + ').csv', index=False, sep=' ',
-                      header=False)
+                header=False)
 
+
+def checkSolution():
+    if ('pairs' not in currentProblem.keys()):
+        print('No data selected')
+        return
+    if ('solution' not in currentProblem.keys()):
+        print('Please solve the problem first')
+        return
+    files = []
+    for file in glob.glob("datasheets/solutions/" + currentProblem['filename'] + "*.sol"):
+        files.append(file)
+    data = pd.read_csv("datasheets/solutions/" + files[0].split('\\')[1], sep='\t', names=['Courses', 'Period'],
+                       header=None)
+    # data['Courses'] = data['Courses'].apply(str).str.zfill(4)
+    data = dict(zip(data['Courses'].values.tolist(), data['Period'].values.tolist()))
+    courses = set(data.keys())
+    periods = len(set(data.values()))
+    costs = calculateCost(data, currentProblem['pairs'])
+    if courses == set(currentProblem['solution'].keys()):
+        print('Courses is correct')
+    else:
+        print('Courses is not correct')
+    conflicts = 0
+    for i in currentProblem['pairs']:
+        for pair in itertools.combinations(i, r=2):  # get all possible pairs example (1,2) and (2,1)
+            difference = abs(data.get(int(pair[0].lstrip('0'))) - data.get(
+                int(pair[1].lstrip('0'))))
+            if difference == 0:
+                conflicts = conflicts + 1
+    if conflicts == 0:
+        print('No conflicts detected')
+    else:
+        print('Conflicts detected')
+
+
+def getCurrentProblem():
+    return currentProblem
+
+
+def solveAll():
+    files = []
+    for file in glob.glob("datasheets/problems/*.stu"):
+        files.append(file)
+    for file in files:
+        readFile(file)
+        confiltTable()
+        colorGraph()
 # start_time = time.time()
 # readFile('../datasheets/problems/kfu-s-93.stu')
 # print("--- %s seconds ---" % (time.time() - start_time))
 # print(str(datetime.timedelta(seconds=time.time() - start_time)))
 
-# readFile("../datasheets/problems/demo.stu")
+# readFile("../datasheets/problems/sta-f-83.stu")
+# checkSolution()
+# solveAll()

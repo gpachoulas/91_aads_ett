@@ -1,4 +1,4 @@
-menuOptions = ['Load data', 'Solve Problem', 'Exit']
+menuOptions = ['Load data', 'Solve Problem', 'Check predefined solution', 'Solve all', 'Exit']
 import src.createDataframes as mainFunctions
 
 
@@ -20,26 +20,43 @@ def loadData():
     if selectedOption == str(len(files) + 1):
         printMainMenu()
     else:
+        print('|||||||||||||Results||||||||||||||')
         print('Selected data: ' + files[int(selectedOption) - 1].split('\\')[1])
         mainFunctions.readFile(files[int(selectedOption) - 1])
         mainFunctions.problemInfo()
+        print('||||||||||||||||||||||||||||||||||')
         input("Press Enter to continue...")
 
 
+
 def solveProblem():
+    print('|||||||||||||Results||||||||||||||')
     mainFunctions.colorGraph()
+    print('||||||||||||||||||||||||||||||||||')
+
+
+def checkPredefinedSolution():
+    print('|||||||||||||Results||||||||||||||')
+    mainFunctions.checkSolution()
+    print('||||||||||||||||||||||||||||||||||')
 
 
 def exit():
     import sys
     sys.exit()
 
+def solveAllProblems():
+    print('|||||||||||||Results||||||||||||||')
+    mainFunctions.solveAll()
+    print('||||||||||||||||||||||||||||||||||')
 
 def selectOption(selectedOption):
     switcher = {
         1: loadData,
         2: solveProblem,
-        3: exit
+        3: checkPredefinedSolution,
+        4: solveAllProblems,
+        5: exit
     }
     func = switcher.get(int(selectedOption), lambda: 'Invalid')
     return func()
